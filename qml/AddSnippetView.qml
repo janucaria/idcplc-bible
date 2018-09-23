@@ -4,8 +4,7 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 
-// SQLite driver
-import QtQuick.LocalStorage 2.0
+import ActionProvider 0.1
 
 // View untuk input snippet.
 Rectangle {
@@ -98,36 +97,10 @@ Rectangle {
     Button {
         text: "OK"
         onClicked: {
-            addSnippetView.visible = false
-
-            if(idValue) {
-                db.transaction (function(tx) {
-                    var query = [
-                        "UPDATE TSnippets",
-                        "SET contributor = ?,",
-                            "title = ?,",
-                            "category = ?,",
-                            "languages = ?,",
-                            "description = ?,",
-                            "snippet = ?",
-                        "WHERE",
-                            "xid = ?",
-                        ""].join(" ");
-                    
-                    tx.executeSql (query, [txtContributor.text, txtTitle.text, txtCategory.text, txtLanguages.text, txtDescription.text, editSnippet.text, idValue]);
-
-                    reload();
-                    clearForm();
-                })
-
-                return;
-            }
-            
-            db.transaction (function(tx) {
-                tx.executeSql ('insert into TSnippets (contributor, title, category, languages, description, snippet) values (?, ?, ?, ?, ?, ?)', [txtContributor.text, txtTitle.text, txtCategory.text, txtLanguages.text, txtDescription.text, editSnippet.text]);
-                reload();
-                clearForm();
-            })
+            ActionProvider.saveSnippet(addSnippetView);
+            clearForm();
+            categoryBrowser.browser.model.refresh();
+            snippetBrowser.browser.model.refresh();
         }
         x: 0
         y: 420

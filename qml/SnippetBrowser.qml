@@ -7,6 +7,10 @@ import QtQuick.Controls.Styles 1.2
 // SQLite driver
 import QtQuick.LocalStorage 2.0
 
+import ActionProvider 0.1
+
+import idcplc.kodew 0.1
+
 // Snippet browser
 // Container untuk button add snippet dan listview
 // Minimal width 200, maximal width 400, default width 250 (@geger009)
@@ -56,10 +60,6 @@ Rectangle {
                 background: Rectangle {
                     color: "transparent"
                 }
-            }
-
-            Keys.onReturnPressed: {
-                mainWindow.reload();
             }
         }
 
@@ -112,17 +112,8 @@ Rectangle {
             color: "#2B303B"
         }
         focus: true
-
-        function displayCodeByIndex(index) {
-            db.transaction (function(tx) {
-                var rs = tx.executeSql ('select title, description, snippet from TSnippets where xid=?', [index]);
-                codeViewer.labelTitle.text = rs.rows.item(0).title;
-                codeViewer.labelDescription.text = rs.rows.item(0).description;
-                codeViewer.sourceView.text = rs.rows.item(0).snippet;
-            })
-        }
-
-        model: mainWindow.mdl
+        
+        model: SnippetEntryModel {}
 
         delegate: Component {
             Item {
@@ -133,7 +124,7 @@ Rectangle {
                 Label {
                     y: 10
                     height: 15
-                    text: model.modelData.title
+                    text: model.title
                     verticalAlignment: Text.AlignVCenter
                     color: "lightgray"
                     anchors.leftMargin: 10
@@ -175,7 +166,6 @@ Rectangle {
                     anchors.right: parent.right
                 }
 
-
                 MouseArea {
                     id: itemMouseArea
                     anchors.fill: parent
@@ -185,7 +175,9 @@ Rectangle {
                         browser.focus = true
                         browser.currentIndex = index
 
-                        parent.parent.parent.displayCodeByIndex(model.modelData.xid);
+                        var mdlIdx = browser.model.index(browser.currentIndex, 0);
+                        var xid = browser.model.data(mdlIdx, SnippetEntryModel.IdRole);
+                        ActionProvider.displaySnippetById(codeViewer, xid);
                     }
                 }
             }
@@ -196,7 +188,9 @@ Rectangle {
             if (count > 0 && currentIndex > 0)
             {
                 currentIndex--;
-                displayCodeByIndex(model[currentIndex].xid);
+                var mdlIdx = model.index(currentIndex, 0);
+                var xid = model.data(mdlIdx, SnippetEntryModel.IdRole);
+                ActionProvider.displaySnippetById(codeViewer, xid);
             }
         }
 
@@ -205,37 +199,16 @@ Rectangle {
             if (currentIndex < (count-1))
             {
                 currentIndex++;
-                displayCodeByIndex(model[currentIndex].xid);
+                var mdlIdx = model.index(currentIndex, 0);
+                var xid = model.data(mdlIdx, SnippetEntryModel.IdRole);
+                ActionProvider.displaySnippetById(codeViewer, xid);
             }
         }
 
         Keys.onReturnPressed: {
-            var index = model[currentIndex].xid;
-            db.transaction (function(tx) {
-                var rs = tx.executeSql ("SELECT contributor, title, category, languages, description, snippet FROM TSnippets WHERE xid=?", [index]);
-                addSnippetView.idValue = index;
-                addSnippetView.contributorText = rs.rows.item(0).contributor;
-                addSnippetView.titleText = rs.rows.item(0).title;
-                addSnippetView.categoryText = rs.rows.item(0).category;
-                addSnippetView.descriptionText = rs.rows.item(0).description;
-                addSnippetView.snippetText = rs.rows.item(0).snippet;
-                addSnippetView.visible = true;
-            });
-        }
-
-        Keys.onDeletePressed: {
-            var index = model[currentIndex].xid;
-            db.transaction (function(tx) {
-                var query = [
-                    "DELETE",
-                    "FROM",
-                        "TSnippets",
-                    "WHERE",
-                        "xid = ?",
-                    ""].join(" ");
-                var rs = tx.executeSql (query, [index]);
-                reload();
-            });
+            var mdlIdx = model.index(currentIndex, 0);
+            var xid = model.data(mdlIdx, SnippetEntryModel.IdRole);
+            ActionProvider.editSnippetForm(addSnippetView, xid);
         }
     } // ListView
 } // Snippet browser

@@ -4,8 +4,7 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 
-// SQLite driver
-import QtQuick.LocalStorage 2.0
+import idcplc.kodew 0.1
 
 // Category browser
 Rectangle {
@@ -47,7 +46,7 @@ Rectangle {
             color: "#2B303B"
         }
         focus: true
-        model: mainWindow.categories
+        model: CategoryEntryModel{}
 
         delegate: Component {
             Item {
@@ -68,9 +67,7 @@ Rectangle {
                 Label {
                     y: 5
                     height: 20
-                    text: {
-                        text = model.modelData.category;
-                    }
+                    text: model.display;
                     verticalAlignment: Text.AlignVCenter
                     color: "lightgray"
                     anchors.leftMargin: 42
@@ -85,30 +82,16 @@ Rectangle {
 
                     // On select item with mouse click
                     onClicked: {
-                        browser.focus = true
-                        browser.currentIndex = index
-                        mainWindow.reloadSnippets();
+                        browser.focus = true;
+                        browser.currentIndex = index;
+
+                        var mdlIndex = browser.model.index(browser.currentIndex, 0);
+                        var cat = browser.model.data(mdlIndex);
+                        
+                        snippetBrowser.browser.model.category = cat;
                     }
                 }
             }
         } // delegate
-
-        // Navigate using key up.
-        Keys.onUpPressed: {
-            if (count > 0 && currentIndex > 0)
-            {
-                currentIndex--;
-                mainWindow.reloadSnippets();
-            }
-        }
-
-        // Navigate using key down.
-        Keys.onDownPressed: {
-            if (currentIndex < (count-1))
-            {
-                currentIndex++;
-                mainWindow.reloadSnippets();
-            }
-        }
     } // ListView
 } // Category browser
