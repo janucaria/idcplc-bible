@@ -84,11 +84,8 @@ Rectangle {
                     onClicked: {
                         browser.focus = true;
                         browser.currentIndex = index;
-
-                        var mdlIndex = browser.model.index(browser.currentIndex, 0);
-                        var cat = browser.model.data(mdlIndex);
                         
-                        snippetBrowser.browser.model.category = cat;
+                        snippetBrowser.browser.model.category = model.display;
                     }
                 }
             }

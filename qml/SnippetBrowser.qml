@@ -172,12 +172,9 @@ Rectangle {
 
                     // On select item with mouse click
                     onClicked: {
-                        browser.focus = true
-                        browser.currentIndex = index
-
-                        var mdlIdx = browser.model.index(browser.currentIndex, 0);
-                        var xid = browser.model.data(mdlIdx, SnippetEntryModel.IdRole);
-                        ActionProvider.displaySnippetById(codeViewer, xid);
+                        browser.focus = true;
+                        browser.currentIndex = index;
+                        ActionProvider.displaySnippetById(codeViewer, model.xid);
                     }
                 }
             }
